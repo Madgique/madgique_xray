@@ -1,117 +1,70 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net/' }
-        jcenter()
-        mavenCentral()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
-        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.4.0"
-    }
+plugins {
+	id 'net.minecraftforge.gradle' version '[5.1,5.2)'
+	id 'eclipse'
+	id 'maven-publish'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
-apply plugin: "com.matthewprenger.cursegradle"
-
-def ENV = System.getenv()
-version = "${mod_version}+mc${minecraft_version}-build.${ENV.GITHUB_RUN_NUMBER ?: 9999}"
-group = "pro.mikey.mods"
+version = "${mod_version}+mc${minecraft_version}"
+group = "com.madgique"
 archivesBaseName = "advanced-xray"
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 minecraft {
-    mappings channel: 'snapshot', version: '20171003-1.12'
+	mappings channel: mappings_channel, version: mappings_version
 
-    runs {
-        client {
-            workingDirectory project.file('run')
+	runs {
+		client {
+			workingDirectory project.file('run')
 
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-        }
+			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+			property 'forge.logging.console.level', 'debug'
+		}
 
-        server {
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-        }
-    }
+		server {
+			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+			property 'forge.logging.console.level', 'debug'
+		}
+	}
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+	minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 }
 
-// Example for how to get properties into the manifest for reading by the runtime..
 jar {
-    manifest {
-        attributes([
-                "Specification-Title": "Advanced XRay",
-                "Specification-Vendor": "ErrorMikey",
-                "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": project.name,
-                "Implementation-Version": "${version}",
-                "Implementation-Vendor" :"ErrorMikey",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
-    }
+	manifest {
+		attributes([
+				"Specification-Title": "Advanced XRay",
+				"Specification-Vendor": "Madgique",
+				"Specification-Version": "1",
+				"Implementation-Title": project.name,
+				"Implementation-Version": "${version}",
+				"Implementation-Vendor": "Madgique",
+				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+		])
+	}
 }
 
 processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft_version
+	inputs.property "version", project.version
+	inputs.property "mcversion", project.minecraft_version
 
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        expand 'version':project.version, 'mcversion':project.minecraft_version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
+	filesMatching('mcmod.info') {
+		expand 'version': project.version, 'mcversion': project.minecraft_version
+	}
 }
 
 jar.finalizedBy('reobfJar')
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId project.group
-            artifactId project.archivesBaseName
-            version project.version
+	publications {
+		mavenJava(MavenPublication) {
+			groupId project.group
+			artifactId project.archivesBaseName
+			version project.version
 
-            artifact jar
-        }
-    }
-
-    repositories {
-        maven {
-            url "https://maven.saps.dev/"
-            credentials  {
-                username "mikeymods"
-                password "${ENV.SAPS_TOKEN}"
-            }
-        }
-    }
-}
-
-if (ENV.CURSE_DEPLOY_TOKEN) {
-    curseforge {
-        apiKey = ENV.CURSE_DEPLOY_TOKEN
-        project {
-            id = project.curseforge_id
-            releaseType = "release"
-            addGameVersion "Forge"
-            addGameVersion "$minecraft_version"
-            changelog = file('./CHANGELOG.md')
-            changelogType = 'markdown'
-            mainArtifact(jar)
-        }
-    }
+			artifact jar
+		}
+	}
 }
