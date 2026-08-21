@@ -6,7 +6,7 @@ plugins {
 
 version = "${mod_version}+mc${minecraft_version}"
 group = "com.madgique"
-archivesBaseName = "advanced-xray"
+archivesBaseName = "madgique-xray"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
@@ -87,7 +87,7 @@ dependencies {
 jar {
 	manifest {
 		attributes([
-				"Specification-Title": "Advanced XRay",
+				"Specification-Title": "Madgique's XRay",
 				"Specification-Vendor": "Madgique",
 				"Specification-Version": "1",
 				"Implementation-Title": project.name,

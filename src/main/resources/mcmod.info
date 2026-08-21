@@ -1,18 +1,14 @@
 [
 {
-  "modid": "xray",
-  "name": "XRay",
-  "description": "An advanced XRay mod for Minecraft.",
+  "modid": "madgique-xray",
+  "name": "Madgique's XRay",
+  "description": "An advanced XRay mod for Minecraft, with a simple and clean UI to pick the blocks you want to see through.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "https://github.com/michaelhillcox/XRay-Mod",
-  "updateJSON": "https://raw.githubusercontent.com/MichaelHillcox/XRay-Mod/master/versions.json",
-  "authorList": ["MiKeY", "mcd1992"],
-  "credits": "A Special thanks to uaBArt for the 1.7.10 -> 1.8.9 update :)",
-  "logoFile": "assets/xray/logo-small.jpg",
-  "screenshots": [
-    "https://camo.githubusercontent.com/d87b036d1879d3ddca20b89836bec36a96981d61/687474703a2f2f692e696d6775722e636f6d2f4e334b4f4561452e706e67"
-  ],
+  "url": "https://github.com/Madgique/madgique_xray",
+  "authorList": ["Madgique"],
+  "credits": "Fork of Advanced XRay by MiKeY (MichaelHillcox) and mcd1992. Special thanks to uaBArt for the 1.7.10 -> 1.8.9 update.",
+  "logoFile": "assets/madgique-xray/logo-small.jpg",
   "dependencies": []
 }
 ]

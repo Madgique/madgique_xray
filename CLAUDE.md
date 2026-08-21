@@ -1,7 +1,22 @@
-# Advanced XRay — Fork 1.12.2 (Madgique)
+# Madgique's XRay — Fork 1.12.2
 
-Fork du mod [Advanced XRay](https://github.com/ErrorMikey/XRay-Mod) de ErrorMikey (MichaelHillcox).
+Fork du mod [Advanced XRay](https://github.com/AdvancedXRay/XRay-Mod) de MiKeY (MichaelHillcox).
 Objectif : corriger les bugs de la version 1.12.2 et l'améliorer.
+
+## Identité du mod (renommage fork)
+
+- **Nom affiché** : `Madgique's XRay` (`Reference.MOD_NAME`)
+- **MOD_ID** : `madgique-xray` (`Reference.MOD_ID`) — impacte : dossier assets `assets/madgique-xray/`,
+  dossier config utilisateur `config/madgique-xray/`, fichier config Forge `config/madgique-xray.cfg`
+  (`@Config name`), catégorie keybinds
+- **Jar** : `archivesBaseName = "madgique-xray"` → `madgique-xray-<version>+mc1.12.2.jar`
+- **Package Java** : `com.madgique.xray` (convention `com.madgique.<nom_du_mod>`, voir CLAUDE.md général
+  des mods) — déplacé depuis `com.xray` lors du renommage
+- **UPDATE_JSON** : chaîne vide (update check désactivé — le versions.json de l'auteur original ne
+  correspond pas au fork)
+- **mcmod.info** : url GitHub Madgique, authorList `["Madgique"]`, crédits aux auteurs originaux
+- ⚠️ Le changement de MOD_ID réinitialise la config/keybinds des joueurs venant de l'ancien mod
+  (dossier `config/xray/` orphelin)
 
 ## Contexte technique
 
@@ -71,11 +86,11 @@ Forcer le daemon : `gradlew <task> "-Dorg.gradle.java.home=$JDK17_PATH"`.
 ## Structure
 
 ```
-src/main/java/com/xray/
+src/main/java/com/madgique/xray/
 ├── XRay.java              # Classe principale @Mod (preInit/postInit/events)
 ├── Configuration.java     # Config Forge (@Config)
 ├── reference/
-│   ├── Reference.java     # Constantes (MOD_ID="xray", version, chemins GUI)
+│   ├── Reference.java     # Constantes (MOD_ID="madgique-xray", version, chemins GUI)
 │   └── block/             # BlockData, SimpleBlockData, BlockInfo, BlockItem
 ├── store/
 │   ├── BlockStore.java    # Logique de stockage des blocs trackés
@@ -122,8 +137,8 @@ Les minerais apparaissent dans la GUI du mod via `GameBlockStore.populate()` (po
 ## Points connus / à investiguer
 
 - Dernier commit branche : `d832282 fix: issues with layout and block store`
-- `Reference.UPDATE_JSON` pointe encore vers le repo original (update check à désactiver/rediriger pour le fork)
-- Métadonnées jar : vendor "ErrorMikey" (à adapter au fork si souhaité)
+- Logo mcmod.info : toujours l'ancien logo (`assets/madgique-xray/logo-small.jpg`) — nouveau logo à créer
+- README.md réécrit façon Madgique (template fix-cobblemon-pokemon-experience), mention fork + crédits
 
 ## Conventions
 

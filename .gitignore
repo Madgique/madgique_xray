@@ -31,3 +31,5 @@ CREDITS-fml.txt
 *.txt
 
 classes/
+# workspace VSCode (local)
+*.code-workspace
