@@ -134,6 +134,27 @@ noms de fichiers normalisés). `fg.deobf` remappe SRG→MCP à la résolution (c
 Access Transformers.
 Les minerais apparaissent dans la GUI du mod via `GameBlockStore.populate()` (postInit).
 
+## Identification des blocs : par stateId exact (fix variantes)
+
+En 1.12.2, un bloc de registre porte plusieurs **variantes via metadata** (ex: `astralsorcery:blockmarble`
+= marble / runed marble / arch...). Le code original stockait les entrées par `IBlockState.toString()`
+avec un **fallback vers le default state** → ajouter une variante allumait toutes les autres.
+
+Décision (commit `30661f8`) :
+
+- Le store runtime est indexé par **stateId** (`Block.getStateId(state)`, unique par état) :
+  `BlockStore.store` = `HashMap<Integer, BlockData>` ; plus de clé String ni d'entryKey dans BlockData.
+- Matching strict sans fallback dans `RenderEnqueue.blockFinder()`/`checkBlock()` — bonus perf :
+  plus de `toString()` par bloc scanné.
+- `GameBlockStore.populate()` mappe chaque sub-item créatif sur son état exact
+  (`block.getStateFromMeta(item.getMetadata(damage))`) au lieu du base state.
+- Les 3 chemins d'ajout GUI passent l'état exact ("Add in hand" reconstruit le placement,
+  liste de recherche via `Block.getStateById(selectBlock.getStateId())`).
+- Persistance JSON inchangée côté fichier : `SimpleBlockData.stateString` reste écrit pour lisibilité
+  mais n'est plus utilisé au runtime (chargement par stateId, états inconnus ignorés).
+- Contexte : en 1.13+ (flattening) les metadata n'existent plus — chaque variante est un bloc distinct ;
+  c'est pourquoi le mod moderne n'a pas ce problème.
+
 ## Points connus / à investiguer
 
 - Dernier commit branche : `d832282 fix: issues with layout and block store`
