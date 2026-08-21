@@ -13,6 +13,9 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 minecraft {
 	mappings channel: mappings_channel, version: mappings_version
 
+	// ATs requis par les mods CoFH en dev (fg.deobf n'applique pas leurs FMLAT embarqués)
+	accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
 	runs {
 		client {
 			workingDirectory project.file('run')
@@ -28,8 +31,57 @@ minecraft {
 	}
 }
 
+repositories {
+	flatDir { dirs 'libs' }
+}
+
+// Contourne le bug ForgeGradle #748 : le jar binaire mappé contient un enum Side avec
+// une constante BUKKIT parasite (injectée par mergetool 1.0.13) qui fait crasher FML
+// (NullPointerException dans NetworkRegistry.newChannel). Le jar "recomp", généré à
+// partir des sources décompilées, n'a pas ce problème mais n'est produit que si
+// l'artefact classifier "sources" est demandé (ce que fait l'IDE au premier import).
+// On force donc cette demande ici pour que runClient utilise toujours le recomp.
+configurations {
+	forgeSources
+}
+
+// Après évaluation, ForgeGradle a remplacé la dépendance minecraft par la version
+// mappée suffixée (_mapped_<mappings>_at_<hash>) servie par son repo virtuel.
+// On demande le classifier "sources" de ce module exact pour déclencher la
+// génération des sources décompilées puis du jar recomp par ForgeGradle.
+afterEvaluate {
+	def mcDep = configurations.minecraft.dependencies.find { it instanceof ExternalModuleDependency }
+	if (mcDep != null) {
+		dependencies {
+			forgeSources "net.minecraftforge:forge:${mcDep.version}:sources"
+		}
+	}
+}
+
+tasks.register('generateForgeSources') {
+	group = 'forge'
+	description = 'Génère le jar Forge recompilé (recomp) depuis les sources décompilées'
+	doLast {
+		configurations.forgeSources.resolve()
+	}
+}
+
+tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
+	dependsOn 'generateForgeSources'
+}
+
 dependencies {
 	minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+	// Mods de test (fg.deobf = remap SRG->MCP + application des access transformers)
+	implementation fg.deobf("blank:Baubles:1.12-1.5.2")
+	implementation fg.deobf("blank:astralsorcery:1.12.2-1.10.27")
+	implementation fg.deobf("blank:RedstoneFlux-1.12:2.1.1.1:universal")
+	implementation fg.deobf("blank:CoFHCore-1.12.2:4.6.6.1:universal")
+	implementation fg.deobf("blank:CoFHWorld-1.12.2:1.4.0.1:universal")
+	implementation fg.deobf("blank:ThermalFoundation-1.12.2:2.6.7.1:universal")
+	implementation fg.deobf("blank:Hwyla:1.8.26-B41-1.12.2")
+	implementation fg.deobf("blank:jei:1.12.2-4.16.5.1029")
 }
 
 jar {
