@@ -21,13 +21,13 @@ public class GuiEdit extends GuiBase
     private GuiSlider greenSlider;
     private GuiSlider blueSlider;
     private BlockData block;
-    private String storeKey;
+    private int storeKey;
 
     private static final int BUTTON_DELETE = 100;
     private static final int BUTTON_SAVE = 98;
     private static final int BUTTON_CANCEL = 99;
 
-    public GuiEdit(String storeKey, BlockData block) {
+    public GuiEdit(int storeKey, BlockData block) {
         super(true); // Has a sidebar
         this.setSideTitle( I18n.format("xray.single.tools") );
 
@@ -65,7 +65,6 @@ public class GuiEdit extends GuiBase
         {
             case BUTTON_SAVE:
                 BlockData block = new BlockData(
-                        this.storeKey,
                         this.oreName.getText(),
                         this.block.getStateId(),
                         new OutlineColor((int)(redSlider.sliderValue * 255), (int)(greenSlider.sliderValue * 255), (int)(blueSlider.sliderValue * 255) ),
@@ -74,7 +73,6 @@ public class GuiEdit extends GuiBase
                         this.block.getOrder()
                 );
 
-                Controller.getBlockStore().getStore().remove(this.storeKey);
                 Controller.getBlockStore().getStore().put(this.storeKey, block);
 
                 XRay.blockStore.write( Controller.getBlockStore().getStore() );

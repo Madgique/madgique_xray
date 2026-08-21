@@ -5,7 +5,6 @@ import net.minecraft.item.ItemStack;
 
 public class BlockData {
 
-    private String entryKey;
     private String entryName;
     private int stateId;
     private OutlineColor color;
@@ -13,18 +12,13 @@ public class BlockData {
     private boolean drawing;
     private int order;
 
-    public BlockData(String entryKey, String entryName, int stateId, OutlineColor color, ItemStack itemStack, boolean drawing, int order) {
-        this.entryKey = entryKey;
+    public BlockData(String entryName, int stateId, OutlineColor color, ItemStack itemStack, boolean drawing, int order) {
         this.entryName = entryName;
         this.stateId = stateId;
         this.color = color;
         this.itemStack = itemStack;
         this.drawing = drawing;
         this.order = order;
-    }
-
-    public String getEntryKey() {
-        return entryKey;
     }
 
     public String getEntryName() {

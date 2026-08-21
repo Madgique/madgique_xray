@@ -78,14 +78,15 @@ public class GuiAddBlock extends GuiBase {
 				mc.player.closeScreen();
 
 				if( this.state == null )
-                	this.state = Block.getBlockFromItem(this.selectBlock.getItemStack().getItem()).getDefaultState();
+					// Rebuild the exact state from the selected BlockItem so each variant
+					// (metadata) is added as its own entry instead of the default state.
+					this.state = Block.getStateById(this.selectBlock.getStateId());
 
 				// Push the block to the render stack
 				Controller.getBlockStore().put(
-					this.state.toString(),
+					Block.getStateId(this.state),
 
 					new BlockData(
-						this.state.toString(),
 						oreName.getText(),
 						Block.getStateId(this.state),
 						new OutlineColor((int)(redSlider.sliderValue * 255), (int)(greenSlider.sliderValue * 255), (int)(blueSlider.sliderValue * 255)),

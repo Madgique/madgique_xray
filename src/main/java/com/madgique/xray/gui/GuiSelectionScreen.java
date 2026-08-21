@@ -108,7 +108,7 @@ public class GuiSelectionScreen extends GuiBase
 				// Fake placement for correct meta
 				// Might not work on things like a chest...
 				IBlockState iBlockState = Utils.getStateFromPlacement(this.mc.world, this.mc.player, handItem);
-				mc.displayGuiScreen( new GuiAddBlock( new BlockItem(Block.getStateId(iBlockState), handItem), null) );
+				mc.displayGuiScreen( new GuiAddBlock( new BlockItem(Block.getStateId(iBlockState), handItem), iBlockState) );
 				break;
 
 			case BUTTON_ADD_LOOK:

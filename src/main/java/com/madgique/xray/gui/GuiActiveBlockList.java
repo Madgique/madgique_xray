@@ -43,7 +43,7 @@ public class GuiActiveBlockList extends GuiScrollingList {
     protected void elementClicked(int index, boolean doubleClick) {
         BlockData data = this.itemList.get(index);
         if( GuiEdit.isShiftKeyDown() ) {
-            Controller.getBlockStore().toggleDrawing(data.getEntryKey());
+            Controller.getBlockStore().toggleDrawing(data.getStateId());
             XRay.blockStore.write(Controller.getBlockStore().getStore());
 
             return;
@@ -51,7 +51,7 @@ public class GuiActiveBlockList extends GuiScrollingList {
 
         if( doubleClick ) {
             XRay.mc.player.closeScreen();
-            XRay.mc.displayGuiScreen( new GuiEdit(data.getEntryKey(), data) );
+            XRay.mc.displayGuiScreen( new GuiEdit(data.getStateId(), data) );
         }
     }
 

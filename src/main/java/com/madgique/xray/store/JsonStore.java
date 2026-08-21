@@ -8,6 +8,8 @@ import com.madgique.xray.XRay;
 import com.madgique.xray.reference.Reference;
 import com.madgique.xray.reference.block.BlockData;
 import com.madgique.xray.reference.block.SimpleBlockData;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import org.apache.logging.log4j.Level;
 
 import java.io.*;
@@ -46,9 +48,12 @@ public class JsonStore
         }
     }
 
-    public void write(HashMap<String, BlockData> blockData) {
+    public void write(HashMap<Integer, BlockData> blockData) {
         List<SimpleBlockData> simpleBlockData = new ArrayList<>();
-        blockData.forEach( (k, v) -> simpleBlockData.add(new SimpleBlockData(v.getEntryName(), k, v.getStateId(), v.getColor(), v.isDrawing(), v.getOrder())) );
+        blockData.forEach( (k, v) -> {
+            IBlockState state = Block.getStateById(k);
+            simpleBlockData.add(new SimpleBlockData(v.getEntryName(), state != null ? state.toString() : "", k, v.getColor(), v.isDrawing(), v.getOrder()));
+        });
 
         this.write(simpleBlockData);
     }

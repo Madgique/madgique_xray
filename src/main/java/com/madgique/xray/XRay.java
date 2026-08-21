@@ -78,7 +78,7 @@ public class XRay
 		if( data.isEmpty() )
 			return;
 
-		HashMap<String, BlockData> map = BlockStore.getFromSimpleBlockList(data);
+		HashMap<Integer, BlockData> map = BlockStore.getFromSimpleBlockList(data);
 		Controller.getBlockStore().setStore(map);
 	}
 

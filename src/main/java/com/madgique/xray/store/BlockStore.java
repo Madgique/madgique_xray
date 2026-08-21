@@ -27,24 +27,24 @@ public class BlockStore {
         }
     };
 
-    private HashMap<String, BlockData> store = new HashMap<>();
+    private HashMap<Integer, BlockData> store = new HashMap<>();
 
-    public void put(String key, BlockData data) {
+    public void put(int key, BlockData data) {
         if (this.store.containsKey(key))
             return;
 
         this.store.put(key, data);
     }
 
-    public HashMap<String, BlockData> getStore() {
+    public HashMap<Integer, BlockData> getStore() {
         return this.store;
     }
 
-    public void setStore(HashMap<String, BlockData> store) {
+    public void setStore(HashMap<Integer, BlockData> store) {
         this.store = store;
     }
 
-    public void toggleDrawing(String key ) {
+    public void toggleDrawing(int key ) {
         if( !this.store.containsKey(key) )
             return;
 
@@ -52,17 +52,18 @@ public class BlockStore {
         data.setDrawing(!data.isDrawing());
     }
 
-    public static HashMap<String, BlockData> getFromSimpleBlockList(List<SimpleBlockData> simpleList)
+    public static HashMap<Integer, BlockData> getFromSimpleBlockList(List<SimpleBlockData> simpleList)
     {
-        HashMap<String, BlockData> blockData = new HashMap<>();
+        HashMap<Integer, BlockData> blockData = new HashMap<>();
 
         for (SimpleBlockData e : simpleList) {
             IBlockState state = Block.getStateById(e.getStateId());
+            if (state == null)
+                continue; // state no longer exists, skip it
 
             blockData.put(
-                    e.getStateString(),
+                    e.getStateId(),
                     new BlockData(
-                            e.getStateString(),
                             e.getName(),
                             e.getStateId(),
                             e.getColor(),

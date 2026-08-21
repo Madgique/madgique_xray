@@ -3,6 +3,7 @@ package com.madgique.xray.store;
 import com.madgique.xray.reference.block.BlockItem;
 import com.madgique.xray.xray.Controller;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -44,7 +45,10 @@ public class GameBlockStore {
                     if (subItem.equals(ItemStack.EMPTY) || subItem.getItem() == Items.AIR || Controller.blackList.contains(block))
                         continue;
 
-                    store.add(new BlockItem(Block.getStateId(Block.getBlockFromItem(subItem.getItem()).getBlockState().getBaseState()), subItem));
+                    // Map each variant to its exact state (metadata), not the base state,
+                    // otherwise every variant would highlight as the same block.
+                    IBlockState exactState = block.getStateFromMeta(item.getMetadata(subItem.getItemDamage()));
+                    store.add(new BlockItem(Block.getStateId(exactState), subItem));
                 }
             }
             else {

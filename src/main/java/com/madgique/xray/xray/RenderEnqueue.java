@@ -5,6 +5,7 @@ import com.madgique.xray.XRay;
 import com.madgique.xray.reference.block.BlockData;
 import com.madgique.xray.reference.block.BlockInfo;
 import com.madgique.xray.utils.WorldRegion;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -32,7 +33,7 @@ public class RenderEnqueue implements Runnable
 	 * Use Controller.requestBlockFinder() to trigger a scan.
 	 */
 	private void blockFinder() {
-        HashMap<String, BlockData> blocks = Controller.getBlockStore().getStore();
+        HashMap<Integer, BlockData> blocks = Controller.getBlockStore().getStore();
 
 		if ( blocks.isEmpty() ) {
 		    if( !Render.ores.isEmpty() )
@@ -47,7 +48,6 @@ public class RenderEnqueue implements Runnable
 
 		// Used for cleaning up the searching process
 		IBlockState currentState;
-		IBlockState defaultState;
 		BlockData blockData;
 
 		// Loop on chunks (x, z)
@@ -94,14 +94,9 @@ public class RenderEnqueue implements Runnable
 								if( Controller.blackList.contains(currentState.getBlock()) )
 									continue;
 
-								defaultState = currentState.getBlock().getDefaultState();
-
-								boolean defaultExists = blocks.containsKey(defaultState.toString());
-								boolean currentExists = blocks.containsKey(currentState.toString());
-								if( !defaultExists && !currentExists )
-									continue;
-
-								blockData = blocks.get(currentExists ? currentState.toString() : defaultState.toString());
+								// Exact state match only: each block variant (metadata) is a separate entry,
+								// no fallback to the default state or variants would all highlight together.
+								blockData = blocks.get( Block.getStateId(currentState) );
 								if( blockData == null || !blockData.isDrawing() ) // fail safe
 									continue;
 
@@ -134,28 +129,21 @@ public class RenderEnqueue implements Runnable
 		if ( !Controller.drawOres() || Controller.getBlockStore().getStore().isEmpty() )
 		    return; // just pass
 
-		String defaultState = state.getBlock().getDefaultState().toString();
+		// Exact state match only: see blockFinder()
+		BlockData data = Controller.getBlockStore().getStore().get( Block.getStateId(state) );
 
-		// Let's see if the block to check is an ore we monitor
-		if ( Controller.getBlockStore().getStore().containsKey(defaultState) ) // it's a block we are monitoring
-		{
-		    if( !add )
-		    {
-                Render.ores.remove( new BlockInfo(pos, null, 0.0) );
-                return;
-            }
+		if ( data == null ) // it's not a block we are monitoring
+			return;
 
-		    BlockData data = null;
-            if( Controller.getBlockStore().getStore().containsKey(defaultState) )
-                data = Controller.getBlockStore().getStore().get(defaultState);
+	    if( !add )
+	    {
+            Render.ores.remove( new BlockInfo(pos, null, 0.0) );
+            return;
+        }
 
-            if( data == null )
-            	return;
+		double alpha = !Configuration.shouldFade ? 255 : Math.max(0, ((Controller.getRadius() - XRay.mc.player.getDistance(pos.getX(), pos.getY(), pos.getZ())) / Controller.getRadius() ) * 255);
 
-			double alpha = !Configuration.shouldFade ? 255 : Math.max(0, ((Controller.getRadius() - XRay.mc.player.getDistance(pos.getX(), pos.getY(), pos.getZ())) / Controller.getRadius() ) * 255);
-
-            // the block was added to the world, let's add it to the drawing buffer
-            Render.ores.add( new BlockInfo(pos, data.getColor().getColor(), alpha) );
-		}
+        // the block was added to the world, let's add it to the drawing buffer
+        Render.ores.add( new BlockInfo(pos, data.getColor().getColor(), alpha) );
 	}
 }
