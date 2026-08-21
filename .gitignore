@@ -21,6 +21,12 @@ build
 eclipse
 run
 
+# config locale (chemins machine)
+.env.local
+
+# mods de test
+libs/
+
 CREDITS-fml.txt
 *.txt
 
