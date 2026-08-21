@@ -31,7 +31,7 @@ Objectif : corriger les bugs de la version 1.12.2 et l'améliorer.
 
 - **Migration ForgeGradle 3 → ForgeGradle 5** (FG3 incompatible avec les extensions VSCode modernes)
 - **Wrapper Gradle 7.6.4** régénéré proprement (`gradlew wrapper --gradle-version 7.6.4`)
-- **`gradle.properties`** : `mod_version=2.0.0`, `minecraft_version=1.12.2`, `forge_version=14.23.5.2860`, `mappings_channel=snapshot`, `mappings_version=20171003-1.12`
+- **`gradle.properties`** : `mod_version=1.0.0` (numérotation fork, indépendante de l'original), `minecraft_version=1.12.2`, `forge_version=14.23.5.2860`, `mappings_channel=snapshot`, `mappings_version=20171003-1.12`
 - **`settings.gradle` créé** : pluginManagement avec repo Maven Forge
 - **`jcenter()` retiré** (service fermé) → `mavenCentral()` suffit
 - **CurseGradle + publish saps.dev retirés** (credentials de l'auteur original, inutiles pour le fork) → seul `maven-publish` local reste

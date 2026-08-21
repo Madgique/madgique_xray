@@ -5,7 +5,7 @@ public class Reference {
     // Mod Constants
     public static final String MOD_ID = "madgique-xray";
     public static final String MOD_NAME = "Madgique's XRay";
-    public static final String MOD_VERSION = "2.0.0";
+    public static final String MOD_VERSION = "1.0.0";
     public static final String UPDATE_JSON = "";
 
     // UI Constants
