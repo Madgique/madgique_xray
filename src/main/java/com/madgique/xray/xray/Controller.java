@@ -2,6 +2,7 @@ package com.madgique.xray.xray;
 
 import com.madgique.xray.Configuration;
 import com.madgique.xray.XRay;
+import com.madgique.xray.reference.block.BlockData;
 import com.madgique.xray.store.BlockStore;
 import com.madgique.xray.utils.WorldRegion;
 
@@ -12,6 +13,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.TextComponentString;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -44,15 +46,37 @@ public class Controller
 
 	// Draw states
 	private static boolean drawOres = false; // Off by default
+	private static boolean blockStoreLoaded = false;
 
     public static BlockStore getBlockStore() {
         return blockStore;
     }
 
+	/**
+	 * Resolves the raw saved entries into the live BlockStore. Can only be done
+	 * once the world is loaded: FML remaps numeric state ids when joining a
+	 * world, so resolving them any earlier yields air states and broken item
+	 * stacks (missing icons, entries that never match).
+	 */
+	public static void ensureBlockStoreLoaded()
+	{
+		if ( blockStoreLoaded )
+			return;
+		blockStoreLoaded = true;
+
+		if ( XRay.pendingBlockStoreData == null )
+			return;
+
+		HashMap<Integer, BlockData> map = BlockStore.getFromSimpleBlockList( XRay.pendingBlockStoreData );
+		blockStore.setStore( map );
+	}
+
     // Public accessors
 	public static boolean drawOres() { return drawOres && XRay.mc.world != null && XRay.mc.player != null; }
 	public static void toggleDrawOres()
 	{
+		ensureBlockStoreLoaded();
+
 		if ( !drawOres ) // enable drawing
 		{
 			Render.ores.clear(); // first, clear the buffer

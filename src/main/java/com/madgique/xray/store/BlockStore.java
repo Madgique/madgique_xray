@@ -2,6 +2,8 @@ package com.madgique.xray.store;
 
 import com.madgique.xray.reference.block.BlockData;
 import com.madgique.xray.reference.block.SimpleBlockData;
+import com.madgique.xray.utils.Utils;
+import com.madgique.xray.XRay;
 import com.madgique.xray.xray.Controller;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -58,8 +60,20 @@ public class BlockStore {
 
         for (SimpleBlockData e : simpleList) {
             IBlockState state = Block.getStateById(e.getStateId());
-            if (state == null)
+            if (state == null) {
+                if( XRay.logger != null )
+                    XRay.logger.info("Skipping saved entry '{}' stateId={} (state no longer exists)", e.getName(), e.getStateId());
                 continue; // state no longer exists, skip it
+            }
+
+            if( !Utils.isBlockFromLoadedMod(state.getBlock()) ) {
+                if( XRay.logger != null )
+                    XRay.logger.info("Skipping saved entry '{}' stateId={} -> {} (ghost block from an unloaded mod)", e.getName(), e.getStateId(), state);
+                continue; // ghost block injected for a world saved with more mods
+            }
+
+            if( XRay.logger != null )
+                XRay.logger.info("Loaded '{}' stateId={} -> {}", e.getName(), e.getStateId(), state);
 
             blockData.put(
                     e.getStateId(),

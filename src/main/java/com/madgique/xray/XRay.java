@@ -55,6 +55,10 @@ public class XRay
 	public static Minecraft mc = Minecraft.getMinecraft();
 	public static JsonStore blockStore = new JsonStore();
 
+	// Raw saved entries, resolved into the live BlockStore once a world is loaded
+	// (see Controller.ensureBlockStoreLoaded)
+	public static List<SimpleBlockData> pendingBlockStoreData;
+
 	public static Logger logger;
 
 	@Instance(Reference.MOD_ID)
@@ -74,12 +78,9 @@ public class XRay
 
 		MinecraftForge.EVENT_BUS.register( this );
 
-		List<SimpleBlockData> data = blockStore.read();
-		if( data.isEmpty() )
-			return;
-
-		HashMap<Integer, BlockData> map = BlockStore.getFromSimpleBlockList(data);
-		Controller.getBlockStore().setStore(map);
+		// Only read the raw entries here: resolving them to live states requires
+		// the world to be loaded (FML remaps state ids when joining a world)
+		pendingBlockStoreData = blockStore.read();
 	}
 
 	@EventHandler
