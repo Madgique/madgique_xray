@@ -90,7 +90,7 @@ public class GuiBlockListScrollable extends GuiBase {
         blocks = new ArrayList<>();
         ArrayList<BlockItem> tmpBlocks = new ArrayList<>();
         for( BlockItem block : XRay.gameBlockStore.getStore() ) {
-            if( block.getItemStack().getDisplayName().toLowerCase().contains(search.getText().toLowerCase()) )
+            if( block.getDisplayName().toLowerCase().contains(search.getText().toLowerCase()) )
                 tmpBlocks.add(block);
         }
         blocks = tmpBlocks;

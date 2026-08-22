@@ -50,6 +50,8 @@ public class GuiSelectionScreen extends GuiBase
 		super(true);
 		this.setSideTitle( I18n.format("xray.single.tools") );
 
+		Controller.ensureBlockStoreLoaded();
+
 		this.itemList = new ArrayList<>(Controller.getBlockStore().getStore().values());
 		this.originalList = this.itemList;
 	}
@@ -108,7 +110,7 @@ public class GuiSelectionScreen extends GuiBase
 				// Fake placement for correct meta
 				// Might not work on things like a chest...
 				IBlockState iBlockState = Utils.getStateFromPlacement(this.mc.world, this.mc.player, handItem);
-				mc.displayGuiScreen( new GuiAddBlock( new BlockItem(Block.getStateId(iBlockState), handItem), iBlockState) );
+				mc.displayGuiScreen( new GuiAddBlock( new BlockItem(iBlockState, handItem), iBlockState) );
 				break;
 
 			case BUTTON_ADD_LOOK:
@@ -122,7 +124,7 @@ public class GuiSelectionScreen extends GuiBase
 						ItemStack lookingStack = lookingAt.getPickBlock(state, ray, mc.world, ray.getBlockPos(), mc.player);
 
 						mc.player.closeScreen();
-						mc.displayGuiScreen( new GuiAddBlock( new BlockItem(Block.getStateId(state), lookingStack), state ) );
+						mc.displayGuiScreen( new GuiAddBlock( new BlockItem(state, lookingStack), state ) );
 					}
 					else
                         Utils.sendMessage(mc.player, "[XRay] "+I18n.format("xray.message.nothing_infront") );

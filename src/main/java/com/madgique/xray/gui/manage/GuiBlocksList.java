@@ -52,7 +52,7 @@ public class GuiBlocksList extends GuiScrollingList {
 
         FontRenderer font = this.parent.getFontRender();
 
-        font.drawString(block.getItemStack().getDisplayName(), this.left + 30 , top +  7, 0xFFFFFF);
+        font.drawString(block.getDisplayName(), this.left + 30 , top +  7, 0xFFFFFF);
         font.drawString(Objects.requireNonNull(block.getItemStack().getItem().getRegistryName()).getResourceDomain(), this.left + 30 , top + 17, 0xD1CFCF);
 
         RenderHelper.enableGUIStandardItemLighting();
