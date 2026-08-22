@@ -6,6 +6,7 @@ import com.madgique.xray.gui.utils.GuiBase;
 import com.madgique.xray.gui.utils.GuiSlider;
 import com.madgique.xray.reference.block.BlockData;
 import com.madgique.xray.utils.OutlineColor;
+import com.madgique.xray.utils.Utils;
 import com.madgique.xray.xray.Controller;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -17,6 +18,7 @@ import java.io.IOException;
 public class GuiEdit extends GuiBase
 {
     private GuiTextField oreName;
+    private GuiTextField hexInput;
     private GuiSlider redSlider;
     private GuiSlider greenSlider;
     private GuiSlider blueSlider;
@@ -56,6 +58,10 @@ public class GuiEdit extends GuiBase
 
         oreName = new GuiTextField( 1, this.fontRenderer, width / 2 - 138 ,  height / 2 - 63, 202, 20 );
         oreName.setText(this.block.getEntryName());
+
+        hexInput = new GuiTextField( 2, this.fontRenderer, width / 2 + 10, height / 2 - 30, 54, 20 );
+        hexInput.setMaxStringLength(7);
+        hexInput.setText(currentHexString());
     }
 
     @Override
@@ -105,7 +111,11 @@ public class GuiEdit extends GuiBase
     {
         super.keyTyped( par1, par2 );
 
-        if( oreName.isFocused() )
+        if( hexInput.isFocused() ) {
+            hexInput.textboxKeyTyped( par1, par2 );
+            applyHexToSliders();
+        }
+        else if( oreName.isFocused() )
             oreName.textboxKeyTyped( par1, par2 );
     }
 
@@ -113,6 +123,14 @@ public class GuiEdit extends GuiBase
     public void updateScreen()
     {
         oreName.updateCursorCounter();
+        hexInput.updateCursorCounter();
+
+        // Keep the text box in sync while the colour is changed with the sliders.
+        if( !hexInput.isFocused() ) {
+            String hex = currentHexString();
+            if( !hex.equalsIgnoreCase(hexInput.getText()) )
+                hexInput.setText(hex);
+        }
     }
 
     @Override
@@ -123,7 +141,9 @@ public class GuiEdit extends GuiBase
 
         oreName.drawTextBox();
 
-        GuiAddBlock.renderPreview(width / 2 - 138, height / 2 - 40, redSlider.sliderValue, greenSlider.sliderValue, blueSlider.sliderValue);
+        GuiAddBlock.renderPreview(width / 2 - 138, height / 2 - 40, 144, 45, redSlider.sliderValue, greenSlider.sliderValue, blueSlider.sliderValue);
+        hexInput.drawTextBox();
+        getFontRender().drawStringWithShadow(I18n.format("xray.color.hex"), width / 2 + 10, height / 2 - 40, 0xffffff);
 
         RenderHelper.enableGUIStandardItemLighting();
         this.itemRender.renderItemAndEffectIntoGUI( this.block.getItemStack(), width / 2 + 50, height / 2 - 105 );
@@ -135,6 +155,38 @@ public class GuiEdit extends GuiBase
     {
         super.mouseClicked( x, y, mouse );
         oreName.mouseClicked( x, y, mouse );
+
+        if( isWithinHexInput(x, y) ) {
+            // Select the whole value on click so typing or pasting replaces it
+            hexInput.setFocused(true);
+            hexInput.setCursorPosition(hexInput.getText().length());
+            hexInput.setSelectionPos(0);
+        }
+        else
+            hexInput.setFocused(false);
+    }
+
+    private boolean isWithinHexInput(int mouseX, int mouseY) {
+        int hexX = width / 2 + 10, hexY = height / 2 - 30;
+        return mouseX >= hexX && mouseX <= hexX + 54 && mouseY >= hexY && mouseY <= hexY + 20;
+    }
+
+    private String currentHexString() {
+        return Utils.formatHexColor(
+            (int)(redSlider.sliderValue * 255),
+            (int)(greenSlider.sliderValue * 255),
+            (int)(blueSlider.sliderValue * 255)
+        );
+    }
+
+    private void applyHexToSliders() {
+        int[] rgb = Utils.parseHexColor(hexInput.getText());
+        if( rgb == null )
+            return;
+
+        redSlider.sliderValue   = rgb[0] / 255f;
+        greenSlider.sliderValue = rgb[1] / 255f;
+        blueSlider.sliderValue  = rgb[2] / 255f;
     }
 
     @Override

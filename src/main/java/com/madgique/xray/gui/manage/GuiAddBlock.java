@@ -7,6 +7,7 @@ import com.madgique.xray.gui.utils.GuiSlider;
 import com.madgique.xray.reference.block.BlockData;
 import com.madgique.xray.reference.block.BlockItem;
 import com.madgique.xray.utils.OutlineColor;
+import com.madgique.xray.utils.Utils;
 import com.madgique.xray.xray.Controller;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -18,18 +19,19 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
-import org.lwjgl.input.Mouse;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class GuiAddBlock extends GuiBase {
 	private static final int BUTTON_ADD = 98;
 	private static final int BUTTON_CANCEL = 99;
 
+	private static final int PREVIEW_WIDTH = 144;
+
 	private GuiTextField oreName;
+	private GuiTextField hexInput;
 	private GuiButton addBtn;
 	private GuiSlider redSlider;
 	private GuiSlider greenSlider;
@@ -41,7 +43,9 @@ public class GuiAddBlock extends GuiBase {
 	public GuiAddBlock(BlockItem selectedBlock, @Nullable IBlockState state) {
 		super(false);
 		this.selectBlock = selectedBlock;
-		this.state = state;
+		// The search list always carries the exact state; fall back to it so the
+		// added entry is never limited to the default state.
+		this.state = state != null ? state : selectedBlock.getBlockState();
 	}
 
 	@Override
@@ -66,7 +70,11 @@ public class GuiAddBlock extends GuiBase {
 		blueSlider.sliderValue  = 1.0F;
 
 		oreName = new GuiTextField( 1, this.fontRenderer, width / 2 - 100 ,  height / 2 - 70, 202, 20 );
-		oreName.setText( this.selectBlock.getItemStack().getDisplayName() );
+		oreName.setText( this.selectBlock.getDisplayName() );
+
+		hexInput = new GuiTextField( 2, this.fontRenderer, width / 2 + 48, height / 2 - 30, 54, 20 );
+		hexInput.setMaxStringLength(7);
+		hexInput.setText(currentHexString());
 	}
 
 	@Override
@@ -76,11 +84,6 @@ public class GuiAddBlock extends GuiBase {
 		{
 			case BUTTON_ADD:
 				mc.player.closeScreen();
-
-				if( this.state == null )
-					// Rebuild the exact state from the selected BlockItem so each variant
-					// (metadata) is added as its own entry instead of the default state.
-					this.state = Block.getStateById(this.selectBlock.getStateId());
 
 				// Push the block to the render stack
 				Controller.getBlockStore().put(
@@ -117,7 +120,11 @@ public class GuiAddBlock extends GuiBase {
 	{
 		super.keyTyped( par1, par2 );
 
-		if( oreName.isFocused() )
+		if( hexInput.isFocused() ) {
+			hexInput.textboxKeyTyped( par1, par2 );
+			applyHexToSliders();
+		}
+		else if( oreName.isFocused() )
 			oreName.textboxKeyTyped( par1, par2 );
 		else
 		{
@@ -134,26 +141,33 @@ public class GuiAddBlock extends GuiBase {
 	public void updateScreen()
 	{
 		oreName.updateCursorCounter();
+		hexInput.updateCursorCounter();
+
+		// Keep the text box in sync while the colour is changed with the sliders.
+		if( !hexInput.isFocused() ) {
+			String hex = currentHexString();
+			if( !hex.equalsIgnoreCase(hexInput.getText()) )
+				hexInput.setText(hex);
+		}
 	}
 
 	@Override
 	public void drawScreen( int x, int y, float f )
 	{
 		super.drawScreen(x, y, f);
-		getFontRender().drawStringWithShadow(selectBlock.getItemStack().getDisplayName(), width / 2f - 100, height / 2f - 90, 0xffffff);
+		getFontRender().drawStringWithShadow(selectBlock.getDisplayName(), width / 2f - 100, height / 2f - 90, 0xffffff);
 
 		oreName.drawTextBox();
-		renderPreview(width / 2 - 100, height / 2 - 40, redSlider.sliderValue, greenSlider.sliderValue, blueSlider.sliderValue);
-
-		if( this.state == null && this.addBtn.isMouseOver() )
-			this.drawHoveringText(Arrays.asList(I18n.format("xray.message.state_warning").split("\n")), this.addBtn.x -30, this.addBtn.y - 45);
+		renderPreview(width / 2 - 100, height / 2 - 40, PREVIEW_WIDTH, 45, redSlider.sliderValue, greenSlider.sliderValue, blueSlider.sliderValue);
+		hexInput.drawTextBox();
+		getFontRender().drawStringWithShadow(I18n.format("xray.color.hex"), width / 2f + 48, height / 2f - 40, 0xffffff);
 
 		RenderHelper.enableGUIStandardItemLighting();
 		this.itemRender.renderItemAndEffectIntoGUI( selectBlock.getItemStack(), width / 2 + 85, height / 2 - 105 );
 		RenderHelper.disableStandardItemLighting();
 	}
 
-	static void renderPreview(int x, int y, float r, float g, float b) {
+	static void renderPreview(int x, int y, int w, int h, float r, float g, float b) {
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder tessellate = tessellator.getBuffer();
 		GlStateManager.enableBlend();
@@ -162,10 +176,13 @@ public class GuiAddBlock extends GuiBase {
 		GlStateManager.color(r, g, b, 1);
 		tessellate.begin(7, DefaultVertexFormats.POSITION);
 		tessellate.pos(x, y, 0.0D).endVertex();
-		tessellate.pos(x, y + 45, 0.0D).endVertex();
-		tessellate.pos(x + 202, y + 45, 0.0D).endVertex();
-		tessellate.pos(x+ 202, y, 0.0D).endVertex();
+		tessellate.pos(x, y + h, 0.0D).endVertex();
+		tessellate.pos(x + w, y + h, 0.0D).endVertex();
+		tessellate.pos(x + w, y, 0.0D).endVertex();
 		tessellator.draw();
+		// Leave a clean white colour behind: the fixed pipeline multiplies every
+		// later draw by the current GL colour.
+		GlStateManager.color(1f, 1f, 1f, 1f);
 		GlStateManager.enableTexture2D();
 		GlStateManager.disableBlend();
 	}
@@ -175,6 +192,15 @@ public class GuiAddBlock extends GuiBase {
 	{
 		super.mouseClicked( x, y, mouse );
 		oreName.mouseClicked( x, y, mouse );
+
+		if( isWithinHexInput(x, y) ) {
+			// Select the whole value on click so typing or pasting replaces it
+			hexInput.setFocused(true);
+			hexInput.setCursorPosition(hexInput.getText().length());
+			hexInput.setSelectionPos(0);
+		}
+		else
+			hexInput.setFocused(false);
 
 		if( oreName.isFocused() && !oreNameCleared )
 		{
@@ -187,6 +213,29 @@ public class GuiAddBlock extends GuiBase {
 			oreNameCleared = false;
 			oreName.setText( I18n.format("xray.input.gui") );
 		}
+	}
+
+	private boolean isWithinHexInput(int mouseX, int mouseY) {
+		int hexX = width / 2 + 48, hexY = height / 2 - 30;
+		return mouseX >= hexX && mouseX <= hexX + 54 && mouseY >= hexY && mouseY <= hexY + 20;
+	}
+
+	private String currentHexString() {
+		return Utils.formatHexColor(
+			(int)(redSlider.sliderValue * 255),
+			(int)(greenSlider.sliderValue * 255),
+			(int)(blueSlider.sliderValue * 255)
+		);
+	}
+
+	private void applyHexToSliders() {
+		int[] rgb = Utils.parseHexColor(hexInput.getText());
+		if( rgb == null )
+			return;
+
+		redSlider.sliderValue   = rgb[0] / 255f;
+		greenSlider.sliderValue = rgb[1] / 255f;
+		blueSlider.sliderValue  = rgb[2] / 255f;
 	}
 
 	@Override
