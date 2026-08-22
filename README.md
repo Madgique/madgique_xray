@@ -19,6 +19,14 @@ A Forge mod for Minecraft 1.12.2 that lets you see through blocks to find ores q
     - Rightclick Editing with support for custom Meta Data
 - Ore Dictionary Support
 
+## Improvements over the original
+
+- Accurate block tracking: each block state (variant/metadata) is handled individually, so what you add is exactly what gets highlighted
+- Searchable list shows every exact block variant, clearly labeled (e.g. `Marble [marbletype=raw]`)
+- Enhanced rendering: optional translucent fill inside highlighted blocks and a dark outline border underneath the colored lines
+- Hex colour input (`#rrggbb`, paste-friendly, selects all on click) alongside the RGB sliders, with a live colour preview
+- Adjustable outline thickness
+
 ## How To Use
 
 ### Using XRay

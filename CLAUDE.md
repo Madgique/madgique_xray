@@ -146,14 +146,58 @@ Décision (commit `30661f8`) :
   `BlockStore.store` = `HashMap<Integer, BlockData>` ; plus de clé String ni d'entryKey dans BlockData.
 - Matching strict sans fallback dans `RenderEnqueue.blockFinder()`/`checkBlock()` — bonus perf :
   plus de `toString()` par bloc scanné.
-- `GameBlockStore.populate()` mappe chaque sub-item créatif sur son état exact
-  (`block.getStateFromMeta(item.getMetadata(damage))`) au lieu du base state.
+- `GameBlockStore.populate()` liste **chaque état valide** (`block.getBlockState().getValidStates()`)
+  plutôt que les items créatifs : un `BlockItem` par état, ItemStack d'affichage construit avec
+  `block.getMetaFromState(state)`. Les blocs sans ItemBlock sont exclus. Raison : le mapping
+  sub-item → état était lossy pour certains mods (ex: ExtraUtils2 `decorativesolid` tombait sur
+  l'état default → "Marble" ajouté via recherche ne matchait jamais la vraie variante posée).
+- `BlockItem` porte l'**IBlockState** (objet stable) et résout `getStateId()` **à l'usage**, jamais au
+  populate : FML remappe les ids numériques d'états au chargement du monde (registres persistés dans
+  le save) — un id capturé au postInit désigne un autre bloc une fois en jeu (symptôme : "Add block"
+  ajoutait un état qui ne matchait jamais). Les noms affichés restent le displayName de l'item, sans
+  suffixe de propriétés (demande utilisateur).
 - Les 3 chemins d'ajout GUI passent l'état exact ("Add in hand" reconstruit le placement,
-  liste de recherche via `Block.getStateById(selectBlock.getStateId())`).
+  look-at lit l'état du monde, liste de recherche porte déjà chaque état).
 - Persistance JSON inchangée côté fichier : `SimpleBlockData.stateString` reste écrit pour lisibilité
   mais n'est plus utilisé au runtime (chargement par stateId, états inconnus ignorés).
+- **DisplayNames qui throw (mods tiers buggés)** : certains ItemBlocks crashent sur les metadata qu'ils
+  ne supportent pas (ex: `BlockSoil` de Thermal Cultivation → `ArrayIndexOutOfBounds` dans
+  `getUnlocalizedName(meta)` ; crashé dans MeetballCraft dès une frappe dans la recherche, car
+  `GuiBlockListScrollable.reloadBlocks()` appelle `getDisplayName()` à chaque touche). Défenses :
+  `GameBlockStore.populate()` teste `stack.getDisplayName()` et skip l'état si ça throw ;
+  `BlockItem.getDisplayName()` met le résultat en cache (appelé en boucle par la recherche) et retombe
+  sur le registry name du bloc en cas d'exception.
 - Contexte : en 1.13+ (flattening) les metadata n'existent plus — chaque variante est un bloc distinct ;
   c'est pourquoi le mod moderne n'a pas ce problème.
+
+## Blocs fantômes FML (worlds sauvegardés avec plus de mods)
+
+Quand un monde contient des blocs d'un mod non chargé (ex: vieux monde modpack avec ExtraUtils2), FML
+injecte des **blocs fantômes** dans le registre runtime **au chargement du monde** (pas avant) pour
+préserver les ids numériques. Conséquence : ces blocs apparaissent dans la liste de recherche avec un
+nom parfois homonyme d'un vrai bloc (`Marble [marbletype=raw]` XU2 vs Astral) et les ajouter tracke un
+bloc inexistant → aucun highlight. Le stateId d'un fantôme peut aussi changer entre preInit (→ `air`)
+et après login monde (→ `extrautils2:*`).
+
+Fix : `Utils.isBlockFromLoadedMod(block)` vérifie que le domaine du registry name appartient à
+`minecraft` ou à un mod actif (`Loader.instance().getActiveModList()`). Appliqué dans
+`GameBlockStore.populate()` (liste de recherche) et `BlockStore.getFromSimpleBlockList()` (chargement
+JSON — les entrées fantômes sont skippées puis purgées du JSON au write suivant).
+
+## Thread-safety du buffer de rendu (fix CME)
+
+`Render.ores` est touché par 3 threads : l'executor du scan (`RenderEnqueue.blockFinder`, rescan
+complet), le **network thread** en multi (mises à jour de blocs via paquets → `checkBlock`
+add/remove) et le render thread qui itère 3× par frame (`drawOres`). L'original utilisait
+`Collections.synchronizedList` mais les for-each ne tiennent pas le lock →
+`ConcurrentModificationException` dès que la liste devient grosse (crashé dans MeetballCraft en
+marchant vers une méteorite AE2 : milliers de skystone = fenêtre de collision garantie).
+
+Fix : `CopyOnWriteArrayList` volatile + **swap atomique de référence** pour le rescan complet
+(`Render.ores = new CopyOnWriteArrayList<>(renderQueue)` au lieu de `clear()+addAll()`) ;
+`drawOres` capture la référence localement → snapshot stable toute la frame, même si un swap ou un
+add/remove a lieu entre-temps. Les add/remove de `checkBlock` restent safe par nature COW (copie du
+backing array, rare et peu coûteux).
 
 ## Points connus / à investiguer
 
@@ -166,3 +210,4 @@ Décision (commit `30661f8`) :
 - Répondre en français (voir CLAUDE.md global utilisateur)
 - Java 8 strict : pas de syntaxe post-Java 8 (var, records, switch expressions…)
 - Mappings MCP snapshot 20171003 : noms de méthodes/champs style SRG-mapped (ex: `Minecraft.getMinecraft()`, `world.getChunkFromChunkCoords(...)`)
+- **README** : mettre à jour la section "Improvements over the original" à chaque changement user-facing (rappel en commentaire HTML au-dessus de la section)
