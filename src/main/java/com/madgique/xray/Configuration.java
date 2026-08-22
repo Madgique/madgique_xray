@@ -30,9 +30,24 @@ public class Configuration
 
     @Config.Name("Outline thickness")
     @Config.Comment({
-            "This allows you to set your own outline thickness, I find that 1.0 is perfect but others my",
-            "think differently. The max is 5.0"
+            "This allows you to set your own outline thickness, I find that 1.5 is perfect but others may",
+            "think differently. The max is 10.0"
     })
-    @Config.RangeDouble(min = 0.5, max = 5.0)
-    public static double outlineThickness = 1f;
+    @Config.RangeDouble(min = 0.5, max = 10.0)
+    public static double outlineThickness = 3.0f;
+
+    @Config.Name("Black outline border")
+    @Config.Comment({
+            "Draws a thicker dark border under each colored outline so blocks stand out more and",
+            "stay visible from far away."
+    })
+    public static boolean blackOutlineBorder = true;
+
+    @Config.Name("Block fill opacity")
+    @Config.Comment({
+            "Opacity of the translucent fill drawn inside highlighted blocks, on top of the outlines.",
+            "0 disables the fill entirely."
+    })
+    @Config.RangeDouble(min = 0.0, max = 1.0)
+    public static double blockFillOpacity = 0.35f;
 }

@@ -13,6 +13,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RenderEnqueue implements Runnable
 {
@@ -113,8 +114,9 @@ public class RenderEnqueue implements Runnable
 		}
 		final BlockPos playerPos = XRay.mc.player.getPosition();
 		renderQueue.sort((t, t1) -> Double.compare(t1.distanceSq(playerPos), t.distanceSq(playerPos)));
-		Render.ores.clear();
-		Render.ores.addAll( renderQueue ); // Add all our found blocks to the Render.ores list. To be use by Render when drawing.
+		// Atomic reference swap: the render thread keeps iterating the previous
+		// snapshot until it picks up this one, no in-place clear+addAll race.
+		Render.ores = new CopyOnWriteArrayList<>( renderQueue );
 	}
 
 	/**
