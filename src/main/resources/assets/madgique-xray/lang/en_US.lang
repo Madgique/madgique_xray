@@ -18,6 +18,7 @@ xray.overlay=XRay Active
 xray.color.red=Red
 xray.color.green=Green
 xray.color.blue=Blue
+xray.color.hex=Hex
 
 xray.input.gui=GUI Name
 xray.input.add=Add Block
@@ -44,9 +45,7 @@ xray.message.thats_odd=Something went wrong? Sorry about that. Make an issue if 
 xray.message.nothing_infront=You're not looking at anything are you?
 xray.message.not_a_number={%s} is not a number. Please use a number for your meta
 xray.message.meta_not_supported={%s} isn't a valid meta data for {%s}
-xray.message.state_warning=Warning, this will limit you to default\nblocks. Use looking at or in hand to get\nthe absolute block you require.\nIn some cases (chests) this may be what you need to do\nif that's the case then this is the right option.
-
-xray.message.help.state=Due to a limitation in how 1.12 states work with block variants the\nsimplest way for us to handle them is to provide 2 ways of adding\nnew blocks. You can add a `default` block by using 'Add Block' which will\nadd the basic version of that black or you can use 'Add Looking at'\nwhich will get the block from the world making it that absolute block.\nThis is the most ideal when needing a specific block.
+xray.message.help.state=Every block variant is listed individually in the search list,\nso 'Add Block' adds the exact state you picked. 'Add Looking at' and\n'Add Block in hand' are still there to grab a block straight from\nthe world or your hand.
 xray.message.help.gui=To edit a block simply double click on the block you wish to edit.\nIf you want to enable / disable a block then shift click on a block.
 xray.message.help.warning=As a warning, using any distance over 64 will cause FPS drops due\nto the vast amount of blocks that we have to scan. (It's like 256^3)
 

@@ -1,3 +1,4 @@
+#PARSE_ESCAPES
 // Debug stuff. Much less important than the normal stuff
 xray.debug.init=XRay initialisé
 
@@ -7,26 +8,48 @@ xray.single.cancel=Annuler
 xray.single.add=Ajouter
 xray.single.delete=Supprimer
 xray.single.save=Sauvegarder
+xray.single.tools=Outils
+xray.single.close=Fermer
+xray.single.search=Rechercher
+xray.single.help=Aide
+
+xray.overlay=XRay actif
 
 xray.color.red=Rouge
 xray.color.green=Vert
 xray.color.blue=Bleu
+xray.color.hex=Hex
 
 xray.input.gui=Nom GUI
-xray.input.add=Ajouter un minerai
+xray.input.add=Ajouter un bloc
+xray.input.add_hand=Ajouter le bloc en main
+xray.input.add_look=Ajouter le bloc visé
 xray.input.distance=Distance
-xray.input.toggle_oredict=Substitutions
 
 xray.title.config=Configurer le bloc
 xray.title.edit=Modifier le bloc
+xray.title.edit_meta=Modifier les métadonnées
 
 xray.message.missing_input=Toutes les entrées doivent être remplies.
 xray.message.already_exists=Ce bloc a déjà été ajouté à la liste des blocs
 xray.message.added_block=%s a été ajouté avec succès.
+xray.message.updated_block=Entrée mise à jour
+xray.message.remove_block=%s a été supprimé
+xray.message.block_exists=%s existe déjà. Veuillez saisir un autre nom.
 xray.message.unknown=On dirait que le bloc que vous avez essayé de modifier n'existe pas.
 xray.message.removed=%s a été retiré avec succès.
 xray.message.config_missing=Le fichier de configuration est introuvable. Création en cours.
+xray.message.invalid_hand=%s doit être un bloc
+xray.message.thats_odd=Un problème est survenu ? Désolé. Ouvrez une issue si cela persiste.
+xray.message.nothing_infront=Vous ne regardez rien, non ?
+
+xray.message.help.state=Chaque variante d'un bloc est listée individuellement dans la\nrecherche : « Ajouter un bloc » ajoute donc l'état exact choisi.\n« Ajouter le bloc visé » et « Ajouter le bloc en main » restent\ndisponibles pour récupérer un bloc directement du monde ou de votre main.
+xray.message.help.gui=Pour modifier un bloc, double-cliquez simplement dessus.\nPour activer / désactiver un bloc, faites un Maj+clic dessus.
+xray.message.help.warning=Attention : toute distance supérieure à 64 peut faire chuter les FPS\nà cause du nombre de blocs à analyser.
 
 // "Toggle" doesn't exist. Toggle means both activate and disable. I translated it to activate.
 xray.config.toggle=Activer XRay
 xray.config.open=Ouvrir le menu de XRay
+
+xray.toggle.activated=XRay activé
+xray.toggle.deactivated=XRay désactivé
